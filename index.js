@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({ count: { type: Number, required: true, 
 
 const conn = {
   db,
-  models: { User: db.model('user', userSchema) },
+  models: { User: db.model('user_test', userSchema) },
 };
 
 module.exports = { conn };

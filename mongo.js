@@ -7,6 +7,7 @@ async function commitWithRetry(session) {
     } catch (error) {
       const isTransientError = error.errorLabels && error.errorLabels.includes('UnknownTransactionCommitResult');
       if (!isTransientError) throw new Error(error);
+      console.log(error);
     }
   }
 }

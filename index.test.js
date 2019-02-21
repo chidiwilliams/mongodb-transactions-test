@@ -2,6 +2,7 @@
 /* eslint-disable no-undef */
 require('jest');
 const mongoose = require('mongoose');
+const fs = require('fs');
 const { conn } = require('./');
 const { runTransactionWithRetry, commitWithRetry } = require('./mongo');
 
@@ -49,6 +50,8 @@ test("should update user's count with Transactions [delay - 500]", async (done) 
       });
 
       await runTransactionWithRetry(async () => {
+        const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
+        fs.appendFileSync('test1.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
         await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
       }, session);
       await commitWithRetry(session);
@@ -73,6 +76,8 @@ test("should update user's count with Transactions [delay - 100]", async (done) 
       });
 
       await runTransactionWithRetry(async () => {
+        const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
+        fs.appendFileSync('test2.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
         await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
       }, session);
       await commitWithRetry(session);
