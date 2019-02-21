@@ -1,0 +1,21 @@
+{
+  "name": "mongodb-transactions-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Chidi Williams <williamschidi1@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "mongoose": "^5.4.14"
+  },
+  "devDependencies": {
+    "eslint": "^5.14.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "jest": "^24.1.0"
+  }
+}
