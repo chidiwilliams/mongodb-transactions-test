@@ -51,7 +51,7 @@ test("should update user's count with Transactions [delay - 500]", async (done) 
 
       await runTransactionWithRetry(async () => {
         const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
-        fs.appendFileSync('test1.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
+        fs.appendFileSync('logs/test1.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
         await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
       }, session);
       await commitWithRetry(session);
@@ -77,7 +77,7 @@ test("should update user's count with Transactions [delay - 100]", async (done) 
 
       await runTransactionWithRetry(async () => {
         const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
-        fs.appendFileSync('test2.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
+        fs.appendFileSync('logs/test2.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
         await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
       }, session);
       await commitWithRetry(session);
