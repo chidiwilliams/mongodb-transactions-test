@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-undef */
 require('jest');
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -41,6 +39,12 @@ async function asyncTimeout(func, delay) {
 test("should update user's count with Transactions [delay - 500]", async (done) => {
   const user = await User.create({});
 
+  async function txnFunc(session) {
+    const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
+    fs.appendFileSync('logs/500.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
+    await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
+  }
+
   await Promise.all(
     [...new Array(10)].map((x, i) => asyncTimeout(async () => {
       const session = await conn.db.startSession({ readPreference: { mode: 'primary' } });
@@ -49,11 +53,7 @@ test("should update user's count with Transactions [delay - 500]", async (done) 
         writeConcern: { w: 'majority' },
       });
 
-      await runTransactionWithRetry(async () => {
-        const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
-        fs.appendFileSync('logs/test1.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
-        await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
-      }, session);
+      await runTransactionWithRetry(txnFunc, session);
       await commitWithRetry(session);
     }, i * 500)),
   );
@@ -67,6 +67,12 @@ test("should update user's count with Transactions [delay - 500]", async (done) 
 test("should update user's count with Transactions [delay - 100]", async (done) => {
   const user = await User.create({});
 
+  async function txnFunc(session) {
+    const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
+    fs.appendFileSync('logs/100.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
+    await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
+  }
+
   await Promise.all(
     [...new Array(10)].map((x, i) => asyncTimeout(async () => {
       const session = await conn.db.startSession({ readPreference: { mode: 'primary' } });
@@ -75,11 +81,7 @@ test("should update user's count with Transactions [delay - 100]", async (done) 
         writeConcern: { w: 'majority' },
       });
 
-      await runTransactionWithRetry(async () => {
-        const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
-        fs.appendFileSync('logs/test2.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
-        await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
-      }, session);
+      await runTransactionWithRetry(txnFunc, session);
       await commitWithRetry(session);
     }, i * 100)),
   );
