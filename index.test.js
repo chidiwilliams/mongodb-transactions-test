@@ -55,7 +55,7 @@ test("should update user's count with Transactions [delay - 500]", async (done) 
 
       await runTransactionWithRetry(txnFunc, session);
       await commitWithRetry(session);
-    }, i * 500)),
+    }, 0)),
   );
 
   const dbUser = await User.findById(user._id);
@@ -83,7 +83,7 @@ test("should update user's count with Transactions [delay - 100]", async (done) 
 
       await runTransactionWithRetry(txnFunc, session);
       await commitWithRetry(session);
-    }, i * 100)),
+    }, 0)),
   );
 
   const dbUser = await User.findById(user._id);

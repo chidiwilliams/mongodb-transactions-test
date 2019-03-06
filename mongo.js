@@ -39,6 +39,15 @@ async function runTransactionWithRetry(txnFunc, session) {
       const isTransientError = error.hasOwnProperty('errorLabels')
         && error.errorLabels.includes('TransientTransactionError');
       if (!isTransientError) throw error;
+
+      // transaction vanished for some reason, so we will abort it and try it again
+      if(error.codeName == 'NoSuchTransaction') {
+        await session.abortTransaction()
+        await session.startTransaction({
+          readConcern: { level: 'snapshot' },
+          writeConcern: { w: 'majority' },
+        })
+      }
       // If transient error, retry the whole transaction
       console.log('TransientTransactionError, retrying transaction ...');
     }
