@@ -43,7 +43,10 @@ async function runTransactionWithRetry(txnFunc, session) {
       // transaction vanished for some reason, so we will abort it and try it again
       if(error.codeName == 'NoSuchTransaction') {
         await session.abortTransaction()
-        await session.startTransaction({ writeConcern: { w: 1 }})
+        await session.startTransaction({
+          readConcern: { level: 'snapshot' },
+          writeConcern: { w: 'majority' },
+        })
       }
       // If transient error, retry the whole transaction
       console.log('TransientTransactionError, retrying transaction ...');
