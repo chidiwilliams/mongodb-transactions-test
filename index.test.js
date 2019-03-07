@@ -36,24 +36,24 @@ async function asyncTimeout(func, delay) {
   });
 }
 
-test("should update user's count with Transactions [delay - 500]", async (done) => {
+test("should update user's count with Transactions [restart=false]", async (done) => {
   const user = await User.create({});
 
   async function txnFunc(session) {
     const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
-    fs.appendFileSync('logs/500.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
+    fs.appendFileSync('logs/norestart.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
     await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
   }
 
   await Promise.all(
-    [...new Array(10)].map((x, i) => asyncTimeout(async () => {
+    [...Array(10)].map(() => asyncTimeout(async () => {
       const session = await conn.db.startSession({ readPreference: { mode: 'primary' } });
       await session.startTransaction({
         readConcern: { level: 'snapshot' },
         writeConcern: { w: 'majority' },
       });
 
-      await runTransactionWithRetry(txnFunc, session);
+      await runTransactionWithRetry(txnFunc, session, false);
       await commitWithRetry(session);
     }, 0)),
   );
@@ -64,24 +64,24 @@ test("should update user's count with Transactions [delay - 500]", async (done) 
   done();
 });
 
-test("should update user's count with Transactions [delay - 100]", async (done) => {
+test.only("should update user's count with Transactions [restart=true]", async (done) => {
   const user = await User.create({});
 
   async function txnFunc(session) {
     const op = await conn.db.db.executeDbAdminCommand({ currentOp: 1 });
-    fs.appendFileSync('logs/100.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
+    fs.appendFileSync('logs/restart.log', `${JSON.stringify({ timestamp: new Date(), op })}\n`);
     await User.findByIdAndUpdate(user._id, { $inc: { count: 1 } }, { session, new: true });
   }
 
   await Promise.all(
-    [...new Array(10)].map((x, i) => asyncTimeout(async () => {
+    [...Array(10)].map(() => asyncTimeout(async () => {
       const session = await conn.db.startSession({ readPreference: { mode: 'primary' } });
       await session.startTransaction({
         readConcern: { level: 'snapshot' },
         writeConcern: { w: 'majority' },
       });
 
-      await runTransactionWithRetry(txnFunc, session);
+      await runTransactionWithRetry(txnFunc, session, true);
       await commitWithRetry(session);
     }, 0)),
   );
